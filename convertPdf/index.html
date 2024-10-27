@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PDF Converter</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #e2e2e2;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>File Name</th>
+                <th>Uploaded at</th>
+                <th>File Type</th>
+                <th>Status</th>
+                <th>Preview</th>
+                <th><input type="checkbox" name="select_all" id="select_all"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>fileOne.pdf</td>
+                <td>8/15/2024 03:51:28 PM</td>
+                <td>PDF</td>
+                <td>Uploading</td>
+                <td><button type="button">Open new Tab</button></td>
+                <td><input type="checkbox" name="" id=""></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>fileOne.pdf</td>
+                <td>8/15/2024 03:51:28 PM</td>
+                <td>PDF</td>
+                <td>Uploading</td>
+                <td><button type="button">Open new Tab</button></td>
+                <td><input type="checkbox" name="" id=""></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>fileOne.pdf</td>
+                <td>8/15/2024 03:51:28 PM</td>
+                <td>PDF</td>
+                <td>Uploading</td>
+                <td><button type="button">Open new Tab</button></td>
+                <td><input type="checkbox" name="" id=""></td>
+            </tr>
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+
+    <!-- 引入外部 JavaScript 檔案 -->
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+</body>
+
+</html>
