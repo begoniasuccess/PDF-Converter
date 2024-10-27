@@ -5,14 +5,32 @@
     <meta charset="UTF-8">
     <title>PDF Converter</title>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        button{
+            border-radius: 0;
+            border:1px solid black;
+            cursor: pointer;
         }
 
-        th,
+        /*  */
+
+        #table_wraper{
+            border: 1px solid black;
+            min-height: 80vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;            
+        }
+
+        th{
+            border: none;
+            padding: 14px 8px;
+            text-align: center;
+        }
+
         td {
-            border: 1px solid #ddd;
+            border: none;
             padding: 8px;
             text-align: center;
         }
@@ -29,54 +47,73 @@
         tr:hover {
             background-color: #e2e2e2;
         }
+
+        .operate_btns{
+            text-align: right;
+            padding: 1em 0;
+        }
+
+        .operate_btns > button{
+            padding: 0.8em 1em;
+            margin-left: 1em;
+            font-weight: bolder;
+        }
+
+        
     </style>
 </head>
 
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>File Name</th>
-                <th>Uploaded at</th>
-                <th>File Type</th>
-                <th>Status</th>
-                <th>Preview</th>
-                <th><input type="checkbox" name="select_all" id="select_all"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>fileOne.pdf</td>
-                <td>8/15/2024 03:51:28 PM</td>
-                <td>PDF</td>
-                <td>Uploading</td>
-                <td><button type="button">Open new Tab</button></td>
-                <td><input type="checkbox" name="" id=""></td>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>fileOne.pdf</td>
-                <td>8/15/2024 03:51:28 PM</td>
-                <td>PDF</td>
-                <td>Uploading</td>
-                <td><button type="button">Open new Tab</button></td>
-                <td><input type="checkbox" name="" id=""></td>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>fileOne.pdf</td>
-                <td>8/15/2024 03:51:28 PM</td>
-                <td>PDF</td>
-                <td>Uploading</td>
-                <td><button type="button">Open new Tab</button></td>
-                <td><input type="checkbox" name="" id=""></td>
-            </tr>
-        </tbody>
-        <tfoot>
-        </tfoot>
-    </table>
+    <div class="operate_btns">
+        <button type="button">Delete</button>
+        <button type="button">Upload a new file</button>
+    </div>
+    <div id="table_wraper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>File Name</th>
+                    <th>Uploaded at</th>
+                    <th>File Type</th>
+                    <th>Status</th>
+                    <th>Preview</th>
+                    <th><input type="checkbox" name="select_all" id="select_all"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>fileOne.pdf</td>
+                    <td>8/15/2024 03:51:28 PM</td>
+                    <td>PDF</td>
+                    <td>Uploading</td>
+                    <td><button type="button">Open new Tab</button></td>
+                    <td><input type="checkbox" name="" id=""></td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>fileOne.pdf</td>
+                    <td>8/15/2024 03:51:28 PM</td>
+                    <td>PDF</td>
+                    <td>Uploading</td>
+                    <td><button type="button">Open new Tab</button></td>
+                    <td><input type="checkbox" name="" id=""></td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>fileOne.pdf</td>
+                    <td>8/15/2024 03:51:28 PM</td>
+                    <td>PDF</td>
+                    <td>Uploading</td>
+                    <td><button type="button">Open new Tab</button></td>
+                    <td><input type="checkbox" name="" id=""></td>
+                </tr>
+            </tbody>
+            <tfoot>
+            </tfoot>
+        </table>
+    </div>
 
     <!-- 引入外部 JavaScript 檔案 -->
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
