@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>PDF Converter</title>
+    <link rel="icon" href="https://icons.veryicon.com/png/o/file-type/file-type-1/pdf-icon.png" type="image/png">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
@@ -23,7 +24,7 @@
                     <th>File Type</th>
                     <th>Status</th>
                     <th>Preview</th>
-                    <th><input type="checkbox" name="select_all" id="select_all"></th>
+                    <th><input type="checkbox" name="select_all" id="select_all" onchange="checkedAll(this)"></th>
                 </tr>
             </thead>
             <tbody>

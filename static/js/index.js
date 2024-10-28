@@ -1,4 +1,4 @@
-const dataCenter = [];
+let dataCenter = [];
 
 // --- Enum part
 const FileType = {
@@ -39,21 +39,21 @@ function formatUA(timestamp) {
     return `${month}/${day}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
 }
 
-function formatFT(fileType){
-    switch(fileType){
+function formatFT(fileType) {
+    switch (fileType) {
         case FileType.PDF:
         default:
             return "PDF";
     }
 }
 
-function formatStatus(status){
-    switch(status){
+function formatStatus(status) {
+    switch (status) {
         case Status.Uploading:
             return "Uploading";
-    
+
         case Status.Parsing:
-            return "Parsing";    
+            return "Parsing";
 
         case Status.Completed:
             return "Completed";
@@ -67,39 +67,24 @@ function formatStatus(status){
 }
 
 // --- Main function
-// TODO:: implement ajax
 function importData(callbackFun) {
-    // --- Fake data for test
-    let testData = {
-        id: 1,
-        fileName: "testFile_1",
-        uploadedAt: 1630096372, // 2021年8月28日星期六 04:32:52 GMT+08:00
-        fileType: FileType.PDF,
-        status: Status.Uploading,
-    };
-    dataCenter.push(deepClone(testData));
-
-    testData.id++;
-    testData.fileName = "testFile_" + testData.id;
-    testData.uploadedAt += 10000;
-    testData.status = Status.Parsing;
-    dataCenter.push(deepClone(testData));
-
-    testData.id++;
-    testData.fileName = "testFile_" + testData.id;
-    testData.uploadedAt += 10000;
-    testData.status = Status.Completed;
-    dataCenter.push(deepClone(testData));
-
-    testData.id++;
-    testData.fileName = "testFile_" + testData.id;
-    testData.uploadedAt += 10000;
-    testData.status = Status.Failed;
-    dataCenter.push(deepClone(testData));
-
-    console.log(dataCenter);
-
-    callbackFun(dataCenter);
+    $.ajax({
+        url: 'api/files', // 請求的 URL
+        method: 'GET', // 或 'POST'，視需求而定
+        // data: {
+        //     key1: 'value1',
+        //     key2: 'value2'
+        // },
+        dataType: 'json', // 返回的資料格式，常用 json
+        success: function (response) {
+            dataCenter = response;
+            console.log(dataCenter);
+            callbackFun(dataCenter);
+        },
+        error: function (xhr, status, error) {
+            console.error('發生錯誤:', error); // 處理錯誤
+        }
+    });
 }
 
 function renderData(srcData) {
@@ -123,21 +108,30 @@ function renderData(srcData) {
         tbody.append(trEle);
 
         // --- set btn status
-        if (aFileRec.status != Status.Completed){
+        if (aFileRec.status != Status.Completed) {
             const previewBtn = $(`tr[rec_id="${aFileRec.id}"] td[attr_name="preview"] button`);
             previewBtn.prop('disabled', true);
         }
 
-        if (aFileRec.status == Status.Uploading || aFileRec.status == Status.Parsing){
+        if (aFileRec.status == Status.Uploading || aFileRec.status == Status.Parsing) {
             const delCB = $(`tr[rec_id="${aFileRec.id}"] td[attr_name="deleteCB"] input`);
             delCB.prop('disabled', true);
         }
-        
+
     }
+}
+
+function loadFilesData() {
+    importData(renderData);
 }
 
 $(document).ready(function () {
     console.log("--- Run document.ready");
 
-    importData(renderData);
+    loadFilesData();
 });
+
+// --- Button click event
+function checkedAll(srcCheckbox){
+    $('input[type="checkbox"]:not(:disabled)').prop('checked', $(srcCheckbox).prop('checked'));
+}
