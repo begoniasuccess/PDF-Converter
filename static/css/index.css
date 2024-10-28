@@ -1,7 +1,15 @@
 button{
     border-radius: 0;
-    border:1px solid black;
+    border:1px solid black;    
+}
+
+input[type="checkbox"], button{
     cursor: pointer;
+}
+
+*:disabled{
+    /* border:1px solid gray; */
+    cursor: not-allowed;
 }
 
 /*  */

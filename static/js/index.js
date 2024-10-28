@@ -118,9 +118,21 @@ function renderData(srcData) {
             .append($('<td attr_name="uploadedAt">').text(formatUA(aFileRec.uploadedAt)))
             .append($('<td attr_name="fileType">').text(formatFT(aFileRec.fileType)))
             .append($('<td attr_name="status">').text(formatStatus(aFileRec.status)))
-            .append($('<td attr_name="preview">').append($("<button>").text("Open new Tab")))
+            .append($('<td attr_name="preview">').append($('<button>').text("Open new Tab")))
             .append($('<td attr_name="deleteCB">').append($("<input>").attr("type", "checkbox")));
         tbody.append(trEle);
+
+        // --- set btn status
+        if (aFileRec.status != Status.Completed){
+            const previewBtn = $(`tr[rec_id="${aFileRec.id}"] td[attr_name="preview"] button`);
+            previewBtn.prop('disabled', true);
+        }
+
+        if (aFileRec.status == Status.Uploading || aFileRec.status == Status.Parsing){
+            const delCB = $(`tr[rec_id="${aFileRec.id}"] td[attr_name="deleteCB"] input`);
+            delCB.prop('disabled', true);
+        }
+        
     }
 }
 
