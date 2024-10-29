@@ -1,19 +1,20 @@
-button{
+button {
     border-radius: 0;
-    border:1px solid black;    
+    border: 1px solid black;
 }
-button{
+
+button {
     cursor: pointer;
 }
 
-*:disabled{
-    border:1px solid gray;
+*:disabled {
+    border: 1px solid gray;
     cursor: not-allowed;
 }
 
 /*  */
 
-#table_wraper{
+#table_wraper {
     border: 1px solid black;
     min-height: 80vh;
     overflow-x: scroll;
@@ -21,11 +22,11 @@ button{
 
 table {
     width: 100%;
-    min-width:800px;
-    border-collapse: collapse;            
+    min-width: 800px;
+    border-collapse: collapse;
 }
 
-th{
+th {
     border: none;
     padding: 14px 8px;
     text-align: center;
@@ -50,25 +51,63 @@ tr:hover {
     background-color: #e2e2e2;
 }
 
-.operate_btns{
+.operate_btns {
     text-align: right;
     padding: 1em 0;
 }
 
-.operate_btns > button{
+.operate_btns>button {
     padding: 0.8em 1em;
     margin-left: 1em;
     font-weight: bolder;
 }
 
-tr[rec_status="2"] td[attr_name="status"]{
+tr[file_status="2"] td[attr_name="status"] {
     color: blue;
 }
 
-tr[rec_status="3"] td[attr_name="status"]{
+tr[file_status="3"] td[attr_name="status"] {
     color: green;
 }
 
-tr[rec_status="9"] td[attr_name="status"]{
+tr[file_status="9"] td[attr_name="status"] {
     color: red;
 }
+
+/* about popup */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Popup 框 */
+.popup-message {
+    background: white;
+    padding: 18px 12px;
+    width: 200px;
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+     */
+    border: 1px solid black;
+    text-align: center;
+    position: relative;
+}
+
+/* 關閉按鈕 */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 14px;
+}
+

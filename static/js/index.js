@@ -1,5 +1,3 @@
-let dataCenter = [];
-
 // --- Enum part
 const FileType = {
     PDF: 1,
@@ -67,23 +65,44 @@ function formatStatus(status) {
 }
 
 // --- Main function
-function importData(callbackFun) {
+function getFiles(fileId, success) {
+    let url = "api/files";
+    if (fileId) url += "/" + fileId;
     $.ajax({
-        url: 'api/files', // 請求的 URL
-        method: 'GET', // 或 'POST'，視需求而定
-        // data: {
-        //     key1: 'value1',
-        //     key2: 'value2'
-        // },
-        dataType: 'json', // 返回的資料格式，常用 json
-        success: function (response) {
-            dataCenter = response;
-            console.log(dataCenter);
-            callbackFun(dataCenter);
-        },
+        url,
+        method: "GET",
+        dataType: "json",
+        success,
         error: function (xhr, status, error) {
-            console.error('發生錯誤:', error); // 處理錯誤
-        }
+            console.error("發生錯誤:", error);
+        },
+    });
+}
+
+function addFile(data, success) {
+    let url = "api/files";
+    $.ajax({
+        url,
+        method: "POST",
+        data,
+        dataType: "json",
+        success,
+        error: function (xhr, status, error) {
+            console.error("發生錯誤:", error);
+        },
+    });
+}
+
+function delFile(fileId, success) {
+    let url = "api/files/" + fileId;
+    $.ajax({
+        url,
+        method: "DELETE",
+        dataType: "json",
+        success,
+        error: function (xhr, status, error) {
+            console.error("發生錯誤:", error);
+        },
     });
 }
 
@@ -97,41 +116,65 @@ function renderData(srcData) {
     tbody.empty();
     for (let i = 0; i < srcData.length; i++) {
         const aFileRec = srcData[i];
-        const trEle = $(`<tr rec_id="${aFileRec.id}" rec_status="${aFileRec.status}">`)
+        const trEle = $(`<tr file_id="${aFileRec.id}" file_status="${aFileRec.status}">`)
             .append($('<td attr_name="id">').text(aFileRec.id))
             .append($('<td attr_name="fileName">').text(aFileRec.fileName))
             .append($('<td attr_name="uploadedAt">').text(formatUA(aFileRec.uploadedAt)))
             .append($('<td attr_name="fileType">').text(formatFT(aFileRec.fileType)))
-            .append($('<td attr_name="status">').text(formatStatus(aFileRec.status)))
-            .append($('<td attr_name="preview">').append($('<button>').text("Open new Tab")))
+            .append($('<td attr_name="status">').html(formatStatus(aFileRec.status)))
+            .append($('<td attr_name="preview">').append($("<button>").text("Open new Tab")))
             .append($('<td attr_name="deleteCB">').append($("<input>").attr("type", "checkbox")));
         tbody.append(trEle);
 
         // --- set btn status
         if (aFileRec.status != Status.Completed) {
-            const previewBtn = $(`tr[rec_id="${aFileRec.id}"] td[attr_name="preview"] button`);
-            previewBtn.prop('disabled', true);
+            const previewBtn = $(`tr[file_id="${aFileRec.id}"] td[attr_name="preview"] button`);
+            previewBtn.prop("disabled", true);
         }
 
         if (aFileRec.status == Status.Uploading || aFileRec.status == Status.Parsing) {
-            const delCB = $(`tr[rec_id="${aFileRec.id}"] td[attr_name="deleteCB"] input`);
-            delCB.prop('disabled', true);
+            const delCB = $(`tr[file_id="${aFileRec.id}"] td[attr_name="deleteCB"] input`);
+            delCB.prop("disabled", true);
         }
-
     }
 }
 
 function loadFilesData() {
-    importData(renderData);
+    getFiles(null, renderData);
 }
 
 $(document).ready(function () {
-    console.log("--- Run document.ready");
-
     loadFilesData();
 });
 
-// --- Button click event
-function checkedAll(srcCheckbox){
-    $('input[type="checkbox"]:not(:disabled)').prop('checked', $(srcCheckbox).prop('checked'));
+// --- Elements events
+function showPopup(msg) {
+    $("#popup_msg").html(msg);
+    document.getElementById("popupOverlay").style.display = "flex";
 }
+
+function closePopup() {
+    document.getElementById("popupOverlay").style.display = "none";
+}
+
+function checkedAll(srcCheckbox) {
+    $('input[type="checkbox"]:not(:disabled)').prop("checked", $(srcCheckbox).prop("checked"));
+}
+
+function delFiles() {
+    const checkedBoxes = $('tbody input[type="checkbox"]:checked:not(:disabled)');
+    if (checkedBoxes.length < 1) {
+        showPopup("No file selected！");
+        return;
+    }
+    // console.log({checkedBoxs});
+    checkedBoxes.each(function () {
+        const fileId = $(this).closest("tr").attr("file_id");
+        delFile(fileId, loadFilesData);
+    });
+}
+
+// function delBtnStatus(){
+//     // --- 計算已勾選的項目
+
+// }

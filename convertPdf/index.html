@@ -11,7 +11,7 @@
 
 <body>
     <div class="operate_btns">
-        <button type="button">Delete</button>
+        <button type="button" onclick="delFiles();">Delete</button>
         <button type="button">Upload a new file</button>
     </div>
     <div id="table_wraper">
@@ -29,12 +29,20 @@
             </thead>
             <tbody>
                 <tr class="hint no_data">
-                    <td>No data found！</td>                    
+                    <td>No data found！</td>
                 </tr>
             </tbody>
             <tfoot>
             </tfoot>
         </table>
+    </div>
+
+    <!-- Popup Message -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-message">
+            <button class="close-btn" onclick="closePopup()">✖</button>
+            <h3 id="popup_msg">Notice</h3>
+        </div>
     </div>
 
     <!-- 引入外部 JavaScript 檔案 -->
