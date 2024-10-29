@@ -12,7 +12,7 @@
 <body>
     <div class="operate_btns">
         <button type="button" onclick="delFiles();">Delete</button>
-        <button type="button">Upload a new file</button>
+        <button type="button" onclick="showUploadPopup();">Upload a new file</button>
     </div>
     <div id="table_wraper">
         <table id="fileList">
@@ -37,8 +37,24 @@
         </table>
     </div>
 
-    <!-- Popup Message -->
-    <div class="popup-overlay" id="popupOverlay">
+    <!-- Popup: Upload a File -->
+    <div class="popup-overlay" id="popupOverlay_upload">
+        <div class="popup-upload">
+            <!-- <button class="close-btn" onclick="closeUploadPopup()">✖</button> -->
+            <div style="text-align: left;">
+                <button type="button" onclick="$('#fileInput').click();">Select a File</button>
+                <input type="file" id="fileInput" style="display: none;">
+            </div>
+            <div id="uploaded_fileName" style="height:7em;"></div>
+            <div style="text-align: right;">
+                <button onclick="closeUploadPopup()" style="margin-right: 1em;">Cancel</button>
+                <button class="upload-btn" onclick="uploadFile()">Save & Process</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup: Hint -->
+    <div class="popup-overlay" id="popupOverlay_hint">
         <div class="popup-message">
             <button class="close-btn" onclick="closePopup()">✖</button>
             <h3 id="popup_msg">Notice</h3>

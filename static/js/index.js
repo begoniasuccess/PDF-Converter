@@ -150,11 +150,11 @@ $(document).ready(function () {
 // --- Elements events
 function showPopup(msg) {
     $("#popup_msg").html(msg);
-    document.getElementById("popupOverlay").style.display = "flex";
+    document.getElementById("popupOverlay_hint").style.display = "flex";
 }
 
 function closePopup() {
-    document.getElementById("popupOverlay").style.display = "none";
+    document.getElementById("popupOverlay_hint").style.display = "none";
 }
 
 function checkedAll(srcCheckbox) {
@@ -172,6 +172,42 @@ function delFiles() {
         const fileId = $(this).closest("tr").attr("file_id");
         delFile(fileId, loadFilesData);
     });
+}
+
+function showUploadPopup() {
+    document.getElementById("popupOverlay_upload").style.display = "flex";
+}
+
+function closeUploadPopup() {
+    document.getElementById("popupOverlay_upload").style.display = "none";
+}
+
+async function uploadFile() {
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput.files[0]) {
+        showPopup("Please select a file.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    try {
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (response.ok) {
+            showPopup("File uploaded successfully！");
+            closeUploadPopup();
+        } else {
+            showPopup("File upload failed！");
+        }
+    } catch (error) {
+        console.error("Upload error：", error);
+        showPopup("An error occurred during upload.");
+    }
 }
 
 // function delBtnStatus(){

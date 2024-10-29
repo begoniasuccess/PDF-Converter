@@ -16,7 +16,7 @@ files = [
 def get_files():
     return jsonify(files), 200
 
-# 取得單一項目
+# 取得
 @files_bp.route('/api/files/<int:file_id>', methods=['GET'])
 def get_file(file_id):
     file = next((file for file in files if file["id"] == file_id), None)
@@ -25,7 +25,7 @@ def get_file(file_id):
     else:
         return jsonify({"error": "Item not found"}), 404
 
-# 新增一個項目
+# 新增
 @files_bp.route('/api/files', methods=['POST'])
 def add_file():
     new_file = request.get_json()
@@ -33,7 +33,7 @@ def add_file():
     files.append(new_file)
     return jsonify(new_file), 201
 
-# 更新一個項目
+# 更新
 @files_bp.route('/api/files/<int:file_id>', methods=['PUT'])
 def update_file(file_id):
     file = next((file for file in files if file["id"] == file_id), None)
@@ -44,7 +44,7 @@ def update_file(file_id):
     else:
         return jsonify({"error": "Item not found"}), 404
 
-# 刪除一個項目
+# 刪除
 @files_bp.route('/api/files/<int:file_id>', methods=['DELETE'])
 def delete_file(file_id):
     global files
