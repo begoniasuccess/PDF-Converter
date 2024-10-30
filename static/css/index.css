@@ -51,6 +51,10 @@ tr:hover {
     background-color: #e2e2e2;
 }
 
+td[attr_name="fileName"]{
+    text-align: left;
+}
+
 .operate_btns {
     text-align: right;
     padding: 1em 0;

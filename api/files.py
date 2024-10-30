@@ -1,7 +1,8 @@
 import json
 import os
 import time
-from enum import Enum
+import sqlite3
+# from enum import Enum
 from flask import Flask, Blueprint, jsonify, request, current_app
 
 app = Flask(__name__)
@@ -20,18 +21,27 @@ JSON_FILE_PATH = os.path.join(app.root_path, '../uploads', 'data.json')
 # 取得(All)
 @files_bp.route('/api/files', methods=['GET'])
 def get_files():
-    files = read_json()
-    return jsonify(files), 200
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM files')
+    files = cursor.fetchall()
+    conn.close()
+
+    return jsonify([dict(file) for file in files]), 200
 
 # 取得
 @files_bp.route('/api/files/<int:file_id>', methods=['GET'])
 def get_file(file_id):
-    files = read_json()
-    file = next((file for file in files if file["id"] == file_id), None)
-    if file:
-        return jsonify(file), 200
-    else:
-        return jsonify({"message": "Item not found"}), 404
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM files WHERE id = ?', (file_id,))
+    file = cursor.fetchone()
+    conn.close()
+
+    if file is None:
+        return jsonify({'message': 'File not found!'}), 404
+
+    return jsonify(dict(file)), 200
     
 # 新增
 @files_bp.route('/api/files', methods=['POST'])
@@ -43,30 +53,48 @@ def insert_file():
     if file.filename == '':
         return jsonify({"message": "No selected file"}), 400
     
-    # 將檔案資訊寫入data.json
-    nowFilesData = read_json()
-    new_file = {"id": get_new_id(), "fileName": file.filename, "uploadedAt":  int(time.time()), "fileType": 1, "status":1} # Uploading
-    nowFilesData.append(new_file)  
-    write_json(nowFilesData)
+    # 將檔案資訊寫入DB
+    file_name = file.filename
+    uploaded_at = int(time.time())
+    file_type = 1
+    status = 1 # Uploading
 
-    return jsonify({"message": "Insert successfully！", "data": new_file['id']}), 201
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO files (fileName, uploadedAt, fileType, status) VALUES (?, ?, ?, ?)',(file_name, uploaded_at, file_type, status))
+    conn.commit()
+
+    cursor.execute('SELECT id FROM files WHERE fileName = ?', (file_name,))
+    newId = cursor.fetchone()['id']
+
+    conn.close()
+
+    return jsonify({"message": "Insert successfully！", "data": newId}), 201
 
 
 # 刪除
 @files_bp.route('/api/files/<int:file_id>', methods=['DELETE'])
 def delete_file(file_id):
-    files = read_json()
 
     # 刪除目標檔案
-    target = find_json(file_id)
-    file_path = 'uploads/' + target["fileName"]
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT fileName FROM files WHERE id = ?', (file_id,))
+    file = cursor.fetchone()
+
+    file_path = 'uploads/' + file["fileName"]
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    # 寫入文字檔
-    files = [file for file in files if file["id"] != file_id]
-    write_json(files)
-    return jsonify({"message": "Item deleted"}), 200
+    # 寫入DB
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM files WHERE id = ?', (file_id,))
+    conn.commit()
+    conn.close()
+
+    time.sleep(2) # 模擬耗時
+    return jsonify({"message": "File deleted"}), 200
 
 # Upload
 @files_bp.route('/api/upload/<int:file_id>', methods=['POST'])
@@ -92,75 +120,83 @@ def upload_file(file_id):
     if not os.path.exists(file_path):
         return jsonify({"message": "Uploaded failed！"}), 500
     
-    # 將檔案資訊寫入data.json
-    files = read_json()
-    for file in files:
-        if file["id"] == file_id:
-            file["status"] = 2 # Parsing
-            write_json(files)
+    # 寫入DB
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('UPDATE files SET status = ? WHERE id = ?', (2, file_id))
+        conn.commit()
+        return jsonify({"message": "Uploaded successfully！"}), 200
+    except sqlite3.IntegrityError:
+        return jsonify({'message': 'File name must be unique!'}), 400
+    finally:
+        conn.close()
 
-    return jsonify({"message": "Uploaded successfully！"}), 200
 
 # Parse
 @files_bp.route('/api/parse/<int:file_id>', methods=['POST'])
 def parse_file(file_id):
-    files = read_json()
+    
+    # # 查找並更新目標物件
+    # files = read_json()
+    # for file in files:
+    #     if file["id"] == file_id:
+    #         # TODO::執行parsing
 
-    # 查找並更新目標物件
-    for file in files:
-        if file["id"] == file_id:
-            # TODO::執行parsing
-            time.sleep(3) # 模擬耗時
+    #         file["status"] = 3
+    #         write_json(files)
+    #         return jsonify({"message": "Parsing successfully.", "file": file}), 200
+    # return jsonify({"message": "File not found."}), 400
 
-            file["status"] = 3
-            write_json(files)
-            return jsonify({"message": "Parsing successfully.", "file": file}), 200
+    # 寫入DB    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('UPDATE files SET status = ? WHERE id = ?', (3, file_id))
+        conn.commit()
+
+        time.sleep(3) # 模擬耗時
+        return jsonify({"message": "Parsing successfully."}), 200
+    except sqlite3.IntegrityError:
+        return jsonify({'message': 'File name must be unique!'}), 400
+    finally:
+        conn.close()
 
     
-    return jsonify({"message": "File not found."}), 400
-
 ###############
 
 # 測試
 @files_bp.route('/api/test', methods=['GET'])
 def test():
-    # testData = [
-    #     {"id": 1, "fileName": "testFile_1", "uploadedAt": 1630096372, "fileType": 1, "status":1},
-    #     {"id": 2, "fileName": "testFile_2", "uploadedAt": 1630196372, "fileType": 1, "status":2},
-    #     {"id": 3, "fileName": "testFile_3", "uploadedAt": 1630056372, "fileType": 1, "status":3},
-    #     {"id": 4, "fileName": "testFile_4", "uploadedAt": 1630022372, "fileType": 1, "status":9},
-    #     {"id": 5, "fileName": "testFile_5", "uploadedAt": 1730096372, "fileType": 1, "status":2},
-    # ]
-    # write_json(testData)
+    create_table()
+    
     return jsonify({"message": "Done"}), 200
 
-def find_json(file_id):
-    files = read_json()
-    result = next((item for item in files if item["id"] == file_id), None)
-    return result
+def create_table():
+    if not os.path.exists('uploads/'):
+        os.makedirs('uploads/', exist_ok=True)
 
-def read_json():
-    # 檢查檔案是否存在
-    if not os.path.exists(JSON_FILE_PATH):
-        os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
-        with open(JSON_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump([], f, indent=4)
+    # 連接到數據庫，或創建名為 `project.db` 的數據庫文件
+    conn = sqlite3.connect('uploads/project.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS files (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fileName TEXT NOT NULL UNIQUE,
+        uploadedAt INTEGER NOT NULL,
+        fileType INTEGER NOT NULL,
+        status INTEGER NOT NULL
+    )
+    ''')
+    conn.commit()  # 確保保存修改
+    conn.close()
+    return
+
+def get_db_connection():
+    if not os.path.exists('uploads/project.db'):
+        create_table()
     
-    # 檔案存在，讀取資料
-    with open(JSON_FILE_PATH, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    return data
-
-def write_json(data):
-    # 檢查檔案是否存在
-    if not os.path.exists(JSON_FILE_PATH):
-        os.makedirs(os.path.dirname(JSON_FILE_PATH), exist_ok=True)
-        with open(JSON_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump({"items": []}, f, indent=4)
-
-    with open(JSON_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4)
-
-def get_new_id():
-    nowFilesData = read_json()
-    return max((item["id"] for item in nowFilesData), default=0) + 1
+    conn = sqlite3.connect('uploads/project.db')
+    conn.row_factory = sqlite3.Row  # 這樣可以通過列名訪問行數據
+    return conn

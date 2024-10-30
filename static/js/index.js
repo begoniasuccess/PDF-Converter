@@ -110,6 +110,9 @@ function renderData(srcData) {
     const tbody = $("#fileList tbody");
     if (!srcData || srcData.length == 0) {
         // TODO:: render 「No data found.」 hint.
+        tbody.html(`<tr class="hint no_data">
+                    <td colspan="7">No data found！</td>
+                </tr>`);
         return;
     }
 
@@ -165,7 +168,10 @@ function delFiles() {
     // console.log({checkedBoxs});
     checkedBoxes.each(function () {
         const fileId = $(this).closest("tr").attr("file_id");
-        delFile(fileId, loadFilesData);
+        delFile(fileId, function(delRes){
+            console.log({delRes});
+            loadFilesData();
+        });
     });
 }
 
@@ -194,14 +200,14 @@ function insertFiile(){
         processData: false,
         contentType: false,
         success: function (response) {
-            console.log(response.message);
+            console.log({response});
             loadFilesData();
             closeUploadPopup();
-            uploadFile(response.data)
+            uploadFile(response.data);
         },
-        error: function (...argus) {
+        error: function (xhr, status, error) {
             showPopup("Request failed！");
-            console.log(argus)
+            console.log({xhr, status, error})
         },
     });
 }
@@ -223,14 +229,17 @@ function uploadFile(fileId) {
         data: formData,
         processData: false,
         contentType: false,
+        timeout: 30*60*1000, // 最多等半小時
         success: function (response) {
             console.log(response.message);
             loadFilesData();
             closeUploadPopup();
             parseFile(fileId)
         },
-        error: function () {
-            showPopup("File upload failed！");
+        error: function(xhr, status, error) {
+            let fileName = $(`tr[file_id]="${fileId} td[attr_name="fileName"]"`).text();
+            showPopup(fileName + "<br>File upload failed！");
+            delFile(fileId, loadFilesData);
         },
     }).always(function(){
         // 清除上傳的檔案
@@ -245,12 +254,13 @@ function parseFile(fileId) {
     $.ajax({
         url,
         type: "POST",
+        timeout: 2*60*60*1000, // 最多等2小時
         processData: false,
         contentType: false,
         success: function (response) {
             console.log(response.message);
         },
-        error: function () {
+        error: function(xhr, status, error) {
             console.log("Parsing failed！");
         },
     }).always(function(){
