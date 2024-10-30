@@ -177,7 +177,7 @@ function closeUploadPopup() {
     $("#popupOverlay_upload").hide();
 }
 
-function uploadFile() {
+function insertFiile(){
     const fileInput = $("#fileInput")[0].files[0];
     if (!fileInput) {
         showPopup("Please select a file.");
@@ -188,22 +188,73 @@ function uploadFile() {
     formData.append("file", fileInput);
 
     $.ajax({
-        url: "/api/upload",
+        url: "api/files",
         type: "POST",
         data: formData,
         processData: false,
         contentType: false,
         success: function (response) {
-            showPopup("File uploaded successfully！");
+            console.log(response.message);
             loadFilesData();
             closeUploadPopup();
+            uploadFile(response.data)
+        },
+        error: function (...argus) {
+            showPopup("Request failed！");
+            console.log(argus)
+        },
+    });
+}
+
+function uploadFile(fileId) {
+    const fileInput = $("#fileInput")[0].files[0];
+    if (!fileInput) {
+        showPopup("Please select a file.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput);
+
+    let url = "api/upload/" + fileId
+    $.ajax({
+        url,
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            console.log(response.message);
+            loadFilesData();
+            closeUploadPopup();
+            parseFile(fileId)
         },
         error: function () {
             showPopup("File upload failed！");
         },
     }).always(function(){
+        // 清除上傳的檔案
         $('#fileInput').val('');
         $(`#uploaded_fileName`).text("");
+    });
+}
+
+function parseFile(fileId) {
+    let url = "api/parse/" + fileId
+
+    $.ajax({
+        url,
+        type: "POST",
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            console.log(response.message);
+        },
+        error: function () {
+            console.log("Parsing failed！");
+        },
+    }).always(function(){
+        loadFilesData();
     });
 }
 
