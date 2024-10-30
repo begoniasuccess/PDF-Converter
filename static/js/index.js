@@ -183,7 +183,7 @@ function closeUploadPopup() {
     $("#popupOverlay_upload").hide();
 }
 
-function insertFiile(){
+function insertFile(){
     const fileInput = $("#fileInput")[0].files[0];
     if (!fileInput) {
         showPopup("Please select a file.");
@@ -200,6 +200,9 @@ function insertFiile(){
         processData: false,
         contentType: false,
         success: function (response) {
+            $(`#addBtn`).text("Please wait...");
+            $(`#addBtn`).prop("disabled", true);
+
             console.log({response});
             loadFilesData();
             closeUploadPopup();
@@ -245,6 +248,10 @@ function uploadFile(fileId) {
         // 清除上傳的檔案
         $('#fileInput').val('');
         $(`#uploaded_fileName`).text("");
+
+        
+        $(`#addBtn`).text("Upload a new file");
+        $(`#addBtn`).prop("disabled", false);
     });
 }
 
