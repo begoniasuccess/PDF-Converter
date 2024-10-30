@@ -40,12 +40,11 @@
     <!-- Popup: Upload a File -->
     <div class="popup-overlay" id="popupOverlay_upload">
         <div class="popup-upload">
-            <!-- <button class="close-btn" onclick="closeUploadPopup()">✖</button> -->
             <div style="text-align: left;">
                 <button type="button" onclick="$('#fileInput').click();">Select a File</button>
-                <input type="file" id="fileInput" style="display: none;">
+                <input type="file" id="fileInput" accept=".pdf" onchange="selectUploadFile();" style="display: none;">
             </div>
-            <div id="uploaded_fileName" style="height:7em;"></div>
+            <div id="uploaded_fileName" style="height:7em;text-align: left;margin: 1em 0;"></div>
             <div style="text-align: right;">
                 <button onclick="closeUploadPopup()" style="margin-right: 1em;">Cancel</button>
                 <button class="upload-btn" onclick="uploadFile()">Save & Process</button>

@@ -143,11 +143,6 @@ function loadFilesData() {
     getFiles(null, renderData);
 }
 
-$(document).ready(function () {
-    loadFilesData();
-});
-
-// --- Elements events
 function showPopup(msg) {
     $("#popup_msg").html(msg);
     document.getElementById("popupOverlay_hint").style.display = "flex";
@@ -175,42 +170,55 @@ function delFiles() {
 }
 
 function showUploadPopup() {
-    document.getElementById("popupOverlay_upload").style.display = "flex";
+    $("#popupOverlay_upload").css("display", "flex");
 }
 
 function closeUploadPopup() {
-    document.getElementById("popupOverlay_upload").style.display = "none";
+    $("#popupOverlay_upload").hide();
 }
 
-async function uploadFile() {
-    const fileInput = document.getElementById("fileInput");
-    if (!fileInput.files[0]) {
+function uploadFile() {
+    const fileInput = $("#fileInput")[0].files[0];
+    if (!fileInput) {
         showPopup("Please select a file.");
         return;
     }
 
     const formData = new FormData();
-    formData.append("file", fileInput.files[0]);
+    formData.append("file", fileInput);
 
-    try {
-        const response = await fetch("/upload", {
-            method: "POST",
-            body: formData,
-        });
-
-        if (response.ok) {
+    $.ajax({
+        url: "/api/upload",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
             showPopup("File uploaded successfully！");
+            loadFilesData();
             closeUploadPopup();
-        } else {
+        },
+        error: function () {
             showPopup("File upload failed！");
-        }
-    } catch (error) {
-        console.error("Upload error：", error);
-        showPopup("An error occurred during upload.");
-    }
+        },
+    }).always(function(){
+        $('#fileInput').val('');
+        $(`#uploaded_fileName`).text("");
+    });
 }
 
-// function delBtnStatus(){
-//     // --- 計算已勾選的項目
+function selectUploadFile(){
+    const fileInput = $("#fileInput")[0].files[0];
+    if (!fileInput) return;
 
-// }
+    console.log({fileInput});
+    
+    // 將檔名顯示在畫面上
+    $(`#uploaded_fileName`).text(fileInput.name);
+    
+}
+
+$(document).ready(function () {
+    loadFilesData();
+});
+
