@@ -53,21 +53,34 @@ def insert_file():
     if file.filename == '':
         return jsonify({"message": "No selected file"}), 400
     
-    # 將檔案資訊寫入DB
-    file_name = file.filename
-    uploaded_at = int(time.time())
-    file_type = 1
-    status = 1 # Uploading
-
+    # 防止重複的fileName出現
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO files (fileName, uploadedAt, fileType, status) VALUES (?, ?, ?, ?)',(file_name, uploaded_at, file_type, status))
-    conn.commit()
+    try:
+        cursor.execute('SELECT * FROM files WHERE fileName = ?', (file.filename,))
+        conn.commit()
+        search = cursor.fetchone()
+        if search:
+            return jsonify({"message": "File names cannot be the same!"}), 400
+        
+        # 將檔案資訊寫入DB
+        file_name = file.filename
+        uploaded_at = int(time.time())
+        file_type = 1
+        status = 1 # Uploading
 
-    cursor.execute('SELECT id FROM files WHERE fileName = ?', (file_name,))
-    newId = cursor.fetchone()['id']
+        cursor.execute('INSERT INTO files (fileName, uploadedAt, fileType, status) VALUES (?, ?, ?, ?)',(file_name, uploaded_at, file_type, status))
+        conn.commit()
 
-    conn.close()
+        cursor.execute('SELECT id FROM files WHERE fileName = ?', (file_name,))
+        search = cursor.fetchone()
+        newId = search['id']
+
+    except sqlite3.Error as e:
+        print("發生錯誤:", e)
+        
+    finally:
+        conn.close()
 
     return jsonify({"message": "Insert successfully！", "data": newId}), 201
 
@@ -89,12 +102,17 @@ def delete_file(file_id):
     # 寫入DB
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM files WHERE id = ?', (file_id,))
-    conn.commit()
-    conn.close()
-
-    time.sleep(2) # 模擬耗時
-    return jsonify({"message": "File deleted"}), 200
+    try:
+        cursor.execute('DELETE FROM files WHERE id = ?', (file_id,))
+        conn.commit()
+        
+        time.sleep(2) # 模擬耗時
+        return jsonify({"message": "File deleted"}), 200
+    except sqlite3.Error as e:
+        # 捕獲錯誤並返回錯誤訊息
+        return jsonify({'message': str(e)}), 400
+    finally:
+        conn.close()
 
 # Upload
 @files_bp.route('/api/upload/<int:file_id>', methods=['POST'])

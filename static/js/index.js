@@ -64,6 +64,10 @@ function formatStatus(status) {
     }
 }
 
+function isPDF(file) {
+    return file.type === "application/pdf";
+}
+
 // --- Main function
 function getFiles(fileId, success) {
     let url = "api/files";
@@ -74,7 +78,7 @@ function getFiles(fileId, success) {
         dataType: "json",
         success,
         error: function (xhr, status, error) {
-            console.error("發生錯誤:", error);
+            console.log({ xhr, status, error });
         },
     });
 }
@@ -88,7 +92,7 @@ function addFile(data, success) {
         dataType: "json",
         success,
         error: function (xhr, status, error) {
-            console.error("發生錯誤:", error);
+            console.log({ xhr, status, error });
         },
     });
 }
@@ -101,7 +105,7 @@ function delFile(fileId, success) {
         dataType: "json",
         success,
         error: function (xhr, status, error) {
-            console.error("發生錯誤:", error);
+            console.log({ xhr, status, error });
         },
     });
 }
@@ -165,11 +169,9 @@ function delFiles() {
         showPopup("No file selected！");
         return;
     }
-    // console.log({checkedBoxs});
     checkedBoxes.each(function () {
         const fileId = $(this).closest("tr").attr("file_id");
-        delFile(fileId, function(delRes){
-            console.log({delRes});
+        delFile(fileId, function (delRes) {
             loadFilesData();
         });
     });
@@ -183,10 +185,22 @@ function closeUploadPopup() {
     $("#popupOverlay_upload").hide();
 }
 
-function insertFile(){
+// 清除上傳的檔案
+function clearSelectedFile() {
+    $("#fileInput").val("");
+    $(`#uploaded_fileName`).text("");
+}
+
+function insertFile() {
     const fileInput = $("#fileInput")[0].files[0];
     if (!fileInput) {
         showPopup("Please select a file.");
+        return;
+    }
+
+    if (!isPDF(fileInput)){
+        showPopup("The document type does not support.");
+        clearSelectedFile();
         return;
     }
 
@@ -203,14 +217,19 @@ function insertFile(){
             $(`#addBtn`).text("Please wait...");
             $(`#addBtn`).prop("disabled", true);
 
-            console.log({response});
             loadFilesData();
             closeUploadPopup();
             uploadFile(response.data);
         },
         error: function (xhr, status, error) {
-            showPopup("Request failed！");
-            console.log({xhr, status, error})
+            let hint = "Request failed！";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                hint = xhr.responseJSON.message;
+            }
+            showPopup(hint);
+            console.log({ xhr, status, error });
+
+            clearSelectedFile();
         },
     });
 }
@@ -225,68 +244,66 @@ function uploadFile(fileId) {
     const formData = new FormData();
     formData.append("file", fileInput);
 
-    let url = "api/upload/" + fileId
+    let url = "api/upload/" + fileId;
     $.ajax({
         url,
         type: "POST",
         data: formData,
         processData: false,
         contentType: false,
-        timeout: 30*60*1000, // 最多等半小時
+        timeout: 30 * 60 * 1000, // 最多等半小時
         success: function (response) {
-            console.log(response.message);
             loadFilesData();
             closeUploadPopup();
-            parseFile(fileId)
+            parseFile(fileId);
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             let fileName = $(`tr[file_id]="${fileId} td[attr_name="fileName"]"`).text();
             showPopup(fileName + "<br>File upload failed！");
             delFile(fileId, loadFilesData);
+            console.log({ xhr, status, error });
         },
-    }).always(function(){
-        // 清除上傳的檔案
-        $('#fileInput').val('');
-        $(`#uploaded_fileName`).text("");
+    }).always(function () {
+        clearSelectedFile();
 
-        
+        // 上傳按鈕解禁
         $(`#addBtn`).text("Upload a new file");
         $(`#addBtn`).prop("disabled", false);
     });
 }
 
 function parseFile(fileId) {
-    let url = "api/parse/" + fileId
+    let url = "api/parse/" + fileId;
 
     $.ajax({
         url,
         type: "POST",
-        timeout: 2*60*60*1000, // 最多等2小時
+        timeout: 2 * 60 * 60 * 1000, // 最多等2小時
         processData: false,
         contentType: false,
-        success: function (response) {
-            console.log(response.message);
+        success: function (response) {},
+        error: function (xhr, status, error) {
+            console.log({ xhr, status, error });
         },
-        error: function(xhr, status, error) {
-            console.log("Parsing failed！");
-        },
-    }).always(function(){
+    }).always(function () {
         loadFilesData();
     });
 }
 
-function selectUploadFile(){
+function selectUploadFile() {
     const fileInput = $("#fileInput")[0].files[0];
     if (!fileInput) return;
 
-    console.log({fileInput});
-    
+    if (!isPDF(fileInput)){
+        showPopup("The document type does not support.");
+        clearSelectedFile();
+        return;
+    }
+
     // 將檔名顯示在畫面上
     $(`#uploaded_fileName`).text(fileInput.name);
-    
 }
 
 $(document).ready(function () {
     loadFilesData();
 });
-

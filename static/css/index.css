@@ -98,8 +98,8 @@ tr[file_status="9"] td[attr_name="status"] {
 
 .popup-message {
     background: white;
-    padding: 18px 12px;
-    width: 300px;
+    padding: 18px 3em;
+    /* width: 300px; */
     /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
      */
     border: 1px solid black;
